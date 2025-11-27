@@ -2,7 +2,9 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Registrar um novo usuário
+// =========================
+//  REGISTRO DO USUÁRIO
+// =========================
 exports.register = async (req, res) => {
     const {
         name,
@@ -22,13 +24,14 @@ exports.register = async (req, res) => {
             return res.status(400).json({ msg: 'Usuário já existe' });
         }
 
+        // Foto padrão (já que não envia req.file via FormData)
+        const profilePicture = 'https://i.imgur.com/4ZQZ4Zr.png';
+
         user = new User({
             name,
             email,
             password,
-            profilePicture: req.file
-                ? `/uploads/${req.file.filename}`
-                : 'https://i.imgur.com/4ZQZ4Zr.png', // foto padrão
+            profilePicture,
             address: {
                 cep,
                 street,
@@ -58,7 +61,7 @@ exports.register = async (req, res) => {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        photo: user.profilePicture // envia como "photo"
+                        photo: user.profilePicture
                     }
                 });
             }
@@ -66,11 +69,13 @@ exports.register = async (req, res) => {
 
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Erro no servidor');
+        res.status(500).json({ msg: "Erro no servidor" });
     }
 };
 
-// Obter dados do usuário logado
+// =========================
+//  PEGAR DADOS DO USUÁRIO
+// =========================
 exports.getMe = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
@@ -82,16 +87,18 @@ exports.getMe = async (req, res) => {
             id: user.id,
             name: user.name,
             email: user.email,
-            photo: user.profilePicture // mantém padrão
+            photo: user.profilePicture
         });
 
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Erro no servidor');
+        res.status(500).json({ msg: 'Erro no servidor' });
     }
 };
 
-// LOGIN DO USUÁRIO
+// =========================
+//  LOGIN DO USUÁRIO
+// =========================
 exports.login = async (req, res) => {
     const { email, password } = req.body;
 
@@ -121,7 +128,7 @@ exports.login = async (req, res) => {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        photo: user.profilePicture 
+                        photo: user.profilePicture
                     }
                 });
             }
@@ -129,6 +136,6 @@ exports.login = async (req, res) => {
 
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Erro no servidor');
+        res.status(500).json({ msg: 'Erro no servidor' });
     }
 };

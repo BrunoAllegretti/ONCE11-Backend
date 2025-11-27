@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = require('../config/upload');
+const upload = require('../middleware/upload');
 
 router.post('/register', upload.single('profilePicture'), authController.register);
 

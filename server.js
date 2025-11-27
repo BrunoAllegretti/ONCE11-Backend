@@ -5,25 +5,26 @@ require('dotenv').config();
 
 const app = express();
 
-// conectar ao banco
+// Conectar ao banco MongoDB
 connectDB();
 
-// middlewares
+// Middlewares principais
 app.use(cors());
 app.use(express.json());
 
-// rota teste
+// Servir arquivos estáticos da pasta 'uploads' (necessário para exibir fotos de perfil no frontend)
+app.use('/uploads', express.static('uploads'));
+
+// Rotas
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/products', require('./routes/products'));
+
+// Rota teste
 app.get('/', (req, res) => {
   res.send("API Rodando!");
 });
 
-// Servir arquivos estáticos da pasta 'uploads'
-app.use('/uploads', express.static('uploads'));
-
-// rotas
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/products', require('./routes/products'));
-
+// Porta do servidor
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => console.log(`Servidor iniciado na porta ${PORT}`));
+

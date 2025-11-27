@@ -60,6 +60,26 @@ exports.register = async (req, res) => {
     }
 };
 
+// Obter dados do usuário logado
+exports.getMe = async (req, res) => {
+    try {
+        // req.user.id é definido pelo middleware 'auth'
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ msg: 'Usuário não encontrado' });
+        }
+        res.json({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            profilePicture: user.profilePicture
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Erro no servidor');
+    }
+};
+
 // LOGIN DO USUÁRIO (FALTAVA)
 exports.login = async (req, res) => {
     const { email, password } = req.body;

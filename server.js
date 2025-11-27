@@ -17,6 +17,9 @@ app.get('/', (req, res) => {
   res.send("API Rodando!");
 });
 
+// Servir arquivos estáticos da pasta 'uploads'
+app.use('/uploads', express.static('uploads'));
+
 // rotas
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));

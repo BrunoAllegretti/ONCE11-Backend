@@ -11,4 +11,8 @@ router.post('/register', upload.single('profilePicture'), authController.registe
 
 router.post('/login', authController.login);
 
+// Rota para obter os dados do usuário logado
+const auth = require('../middleware/auth');
+router.get('/me', auth, authController.getMe);
+
 module.exports = router;

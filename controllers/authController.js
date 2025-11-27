@@ -72,7 +72,7 @@ exports.getMe = async (req, res) => {
             id: user.id,
             name: user.name,
             email: user.email,
-            profilePicture: user.profilePicture
+            profilePicture: user.profilePicture || null
         });
     } catch (err) {
         console.error(err.message);
@@ -112,7 +112,7 @@ exports.login = async (req, res) => {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        profilePicture: user.profilePicture
+                        profilePicture: user.profilePicture || null
                     }
                 });
             }

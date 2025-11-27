@@ -14,10 +14,10 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage });
+const upload = require('../config/upload');
 
-// ROTAS
 router.post('/register', upload.single('profilePicture'), authController.register);
+
 router.post('/login', authController.login);
 
 // Rota para obter dados do usuário logado

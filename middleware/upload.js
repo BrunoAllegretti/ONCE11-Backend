@@ -1,19 +1,10 @@
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 
-// Caminho absoluto da pasta uploads
-const uploadPath = path.join(__dirname, '../uploads');
-
-// garante que a pasta existe
-if (!fs.existsSync(uploadPath)) {
-    fs.mkdirSync(uploadPath);
-}
-
-// Configuração do armazenamento no disco
+// Salva fisicamente o arquivo na pasta /uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, uploadPath);
+        cb(null, path.join(__dirname, '../uploads'));
     },
     filename: (req, file, cb) => {
         const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -22,5 +13,6 @@ const storage = multer.diskStorage({
     }
 });
 
-// Exportar o multer configurado
-module.exports = multer({ storage });
+const upload = multer({ storage });
+
+module.exports = upload;

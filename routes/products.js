@@ -11,13 +11,12 @@ router.post('/', auth, productsController.createProduct);
 // @route   GET api/products
 // @desc    Obter todos os produtos (AGORA PROTEGIDO)
 // @access  Private
-router.get('/', auth, productsController.getProducts); // <-- Alteração aplicada aqui
+router.get('/', productsController.getProducts); 
 
 // @route   GET api/products/:id
 // @desc    Obter produto por ID (AGORA PROTEGIDO)
 // @access  Private
-router.get('/:id', auth, productsController.getProductById); // <-- Alteração aplicada aqui
-
+router.get('/:id', productsController.getProductById);
 // @route   PUT api/products/:id
 // @desc    Atualizar um produto (Apenas Admin/Usuário Autenticado)
 // @access  Private

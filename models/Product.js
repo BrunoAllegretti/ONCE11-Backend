@@ -22,9 +22,8 @@ const ProductSchema = new mongoose.Schema({
         type: Number,
         required: false
     },
-    // Campos de variação/filtro
     filters: {
-        type: [String], // Array de strings para filtros gerais
+        type: [String], 
         default: []
     },
     size: {

@@ -2,6 +2,15 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+// Função helper para construir URL da foto de perfil
+const getProfilePictureUrl = (req, filename) => {
+    if (!filename) {
+        return 'https://i.imgur.com/4ZQZ4Zr.png';
+    }
+    // Retorna o caminho relativo que o frontend pode acessar via /uploads
+    return `/uploads/${filename}`;
+};
+
 // =========================
 //  REGISTRO DO USUÁRIO
 // =========================
@@ -24,8 +33,8 @@ exports.register = async (req, res) => {
             return res.status(400).json({ msg: 'Usuário já existe' });
         }
 
-        // Foto padrão (já que não envia req.file via FormData)
-        const profilePicture = 'https://i.imgur.com/4ZQZ4Zr.png';
+        // Foto do upload ou padrão
+        const profilePicture = getProfilePictureUrl(req, req.file?.filename);
 
         user = new User({
             name,
@@ -87,7 +96,7 @@ exports.getMe = async (req, res) => {
             id: user.id,
             name: user.name,
             email: user.email,
-            photo: user.profilePicture
+            photo: getProfilePictureUrl(req, user.profilePicture)
         });
 
     } catch (err) {
@@ -128,7 +137,7 @@ exports.login = async (req, res) => {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        photo: user.profilePicture
+                        photo: getProfilePictureUrl(req, user.profilePicture)
                     }
                 });
             }

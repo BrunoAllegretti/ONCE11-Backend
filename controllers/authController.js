@@ -1,14 +1,23 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 
-// Função helper para construir URL da foto de perfil
-const getProfilePictureUrl = (req, filename) => {
-    if (!filename) {
-        return 'https://i.imgur.com/4ZQZ4Zr.png';
-    }
-    // Retorna o caminho relativo que o frontend pode acessar via /uploads
-    return `/uploads/${filename}`;
+// Função helper para construir URL absoluta da foto de perfil
+// Aceita: nome do arquivo, caminho relativo ('uploads/..' ou '/uploads/...') ou URL absoluta
+const getProfilePictureUrl = (req, value) => {
+    const DEFAULT = 'https://i.imgur.com/4ZQZ4Zr.png';
+    if (!value) return DEFAULT;
+    if (typeof value !== 'string') return DEFAULT;
+    // Se já for uma URL absoluta, retorna como está
+    if (value.startsWith('http://') || value.startsWith('https://')) return value;
+
+    // Normaliza extraindo apenas o nome do arquivo caso venha com caminhos
+    const filename = path.basename(value);
+    const protocol = req.protocol;
+    const host = req.get('host');
+
+    return `${protocol}://${host}/uploads/${filename}`;
 };
 
 // =========================

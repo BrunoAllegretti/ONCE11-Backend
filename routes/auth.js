@@ -13,4 +13,7 @@ router.post('/login', authController.login);
 // Rota para obter dados do usuário logado
 router.get('/me', auth, authController.getMe);
 
+// Rota para atualizar foto de perfil
+router.put('/profile-picture', auth, upload.single('profilePicture'), authController.updateProfilePicture);
+
 module.exports = router;

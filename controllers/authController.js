@@ -2,22 +2,34 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const fs = require('fs');
 
-// Função helper para construir URL absoluta da foto de perfil
-// Aceita: nome do arquivo, caminho relativo ('uploads/..' ou '/uploads/...') ou URL absoluta
-const getProfilePictureUrl = (req, value) => {
+// Função helper para converter imagem para Base64
+const fileToBase64 = (buffer, contentType) => {
+    if (!buffer) return null;
+    return {
+        data: buffer.toString('base64'),
+        contentType: contentType
+    };
+};
+
+// Função helper para retornar foto de perfil
+const getProfilePictureUrl = (profilePicture, profilePictureContentType) => {
     const DEFAULT = 'https://i.imgur.com/4ZQZ4Zr.png';
-    if (!value) return DEFAULT;
-    if (typeof value !== 'string') return DEFAULT;
-    // Se já for uma URL absoluta, retorna como está
-    if (value.startsWith('http://') || value.startsWith('https://')) return value;
-
-    // Normaliza extraindo apenas o nome do arquivo caso venha com caminhos
-    const filename = path.basename(value);
-    const protocol = req.protocol;
-    const host = req.get('host');
-
-    return `${protocol}://${host}/uploads/${filename}`;
+    
+    if (!profilePicture) return DEFAULT;
+    
+    // Se for URL externa, retorna como está
+    if (typeof profilePicture === 'string' && (profilePicture.startsWith('http://') || profilePicture.startsWith('https://'))) {
+        return profilePicture;
+    }
+    
+    // Se for Base64, retorna como data URL
+    if (typeof profilePicture === 'string' && profilePicture.length > 100) {
+        return `data:${profilePictureContentType || 'image/jpeg'};base64,${profilePicture}`;
+    }
+    
+    return DEFAULT;
 };
 
 // =========================
@@ -42,14 +54,21 @@ exports.register = async (req, res) => {
             return res.status(400).json({ msg: 'Usuário já existe' });
         }
 
-        // Foto do upload ou padrão
-        const profilePicture = getProfilePictureUrl(req, req.file?.filename);
+        // Converte imagem para Base64 se enviada
+        let profilePicture = null;
+        let profilePictureContentType = null;
+        
+        if (req.file) {
+            profilePicture = req.file.buffer.toString('base64');
+            profilePictureContentType = req.file.mimetype;
+        }
 
         user = new User({
             name,
             email,
             password,
             profilePicture,
+            profilePictureContentType,
             address: {
                 cep,
                 street,
@@ -79,7 +98,7 @@ exports.register = async (req, res) => {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        photo: user.profilePicture
+                        photo: getProfilePictureUrl(user.profilePicture, user.profilePictureContentType)
                     }
                 });
             }
@@ -105,7 +124,7 @@ exports.getMe = async (req, res) => {
             id: user.id,
             name: user.name,
             email: user.email,
-            photo: getProfilePictureUrl(req, user.profilePicture)
+            photo: getProfilePictureUrl(user.profilePicture, user.profilePictureContentType)
         });
 
     } catch (err) {
@@ -146,11 +165,41 @@ exports.login = async (req, res) => {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        photo: getProfilePictureUrl(req, user.profilePicture)
+                        photo: getProfilePictureUrl(user.profilePicture, user.profilePictureContentType)
                     }
                 });
             }
         );
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ msg: 'Erro no servidor' });
+    }
+};
+
+// =========================
+//  ATUALIZAR FOTO DE PERFIL
+// =========================
+exports.updateProfilePicture = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ msg: 'Usuário não encontrado' });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ msg: 'Nenhuma imagem foi enviada' });
+        }
+
+        // Converte imagem para Base64
+        user.profilePicture = req.file.buffer.toString('base64');
+        user.profilePictureContentType = req.file.mimetype;
+        await user.save();
+
+        res.json({
+            msg: 'Foto de perfil atualizada com sucesso',
+            photo: getProfilePictureUrl(user.profilePicture, user.profilePictureContentType)
+        });
 
     } catch (err) {
         console.error(err.message);

@@ -80,3 +80,5 @@ exports.deleteProduct = async (req, res) => {
         res.status(500).send("Erro no servidor");
     }
 };
+
+
